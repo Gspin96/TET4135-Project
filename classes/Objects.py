@@ -7,8 +7,10 @@
         r: resistivity
         L: length
         A: cross -section
-        Name
+        Name: For printing information [TODO]
 """
+def annuity_factor(disc_rate, period): 
+        return disc_rate/(1-(1+disc_rate)**(-period))
 
 class Line:
     def __init__(self, U, resistivity, length, A, Name="Line" ):
@@ -33,9 +35,36 @@ class Line:
         self.o = 365*(self.loss(Pl)*Cl*(24-Th) + self.loss(Ph)*Ch*Th)
         return self.o
     
-    def annuity_factor(self,disc_rate, period): 
-        return disc_rate/(1-(1+disc_rate)**(-period))
-    
-    def calc_inv_annuity(self, Fkm, disc_rate, period):
-        self.f = Fkm*self.L*self.annuity_factor(disc_rate, period)
+    #assuming lifetime matches period of analysis
+    def calc_fixed_annual(self, Fkm, disc_rate, period):
+        self.f = Fkm*self.L*annuity_factor(disc_rate, period)
         return self.f
+    
+    def change_section(self, A):
+        self.A = A
+        self.R = self.r*self.L/A
+
+class Battery:
+    def __init__(self, Chg_eff, Disch_eff, Name="Battery" ):
+        self.Chg_eff = Chg_eff
+        self.Disch_eff = Disch_eff
+        self.Name = Name
+    
+    # Given two daily demand levels and periods, calculate and return battery 
+    # capacity needed to flatten load curve.
+    # Also calculates daily charge/discharge losses to store as attributes
+    #   Ph: high demand power
+    #   Pl: low demand power
+    #   Th: daily peak duration [h]
+    def load_level_cap(self, Ph, Pl, Th):
+        Tl = 24 - Th
+        Pdisch = (Ph-Pl)/(Th/Tl/self.Chg_eff/self.Disch_eff + 1)
+        self.C=Pdisch*Th/self.Chg_eff
+        self.Pleveled = Ph-Pdisch
+        self.Disch_loss = Th * Pdisch * (1/self.Disch_eff - 1)
+        self.Chg_loss = Tl * (self.Pleveled - Pl) * (1 - self.Chg_eff)
+        return self.C
+    
+    def calc_leveling_loss_cost(self, Cl):
+        self.Leveling_loss_cost = (self.Disch_loss+self.Chg_loss)*365*Cl
+        return self.Leveling_loss_cost
