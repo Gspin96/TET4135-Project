@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
-"""
+
+def annuity_factor(disc_rate, period): 
+        return disc_rate/(1-(1+disc_rate)**(-period))
+    
+
+"""----------------------------------------------------------------------------
     Line model.
     Initialization parameters:
         U: working voltage
@@ -9,9 +14,6 @@
         A: cross -section
         Name: For printing information [TODO]
 """
-def annuity_factor(disc_rate, period): 
-        return disc_rate/(1-(1+disc_rate)**(-period))
-
 class Line:
     def __init__(self, U, resistivity, length, A, Name="Line" ):
         self.U = U
@@ -35,15 +37,25 @@ class Line:
         self.o = 365*(self.loss(Pl)*Cl*(24-Th) + self.loss(Ph)*Ch*Th)
         return self.o
     
-    #assuming lifetime matches period of analysis
+    # Calculate fixed annual cost, assuming lifetime matches period of analysis
     def calc_fixed_annual(self, Fkm, disc_rate, period):
         self.f = Fkm*self.L*annuity_factor(disc_rate, period)
         return self.f
     
-    def change_section(self, A):
+    # Set new value for the section and recalculate resistance 
+    def set_section(self, A):
         self.A = A
         self.R = self.r*self.L/A
 
+
+"""----------------------------------------------------------------------------
+    Battery model.
+    Initialization parameters:
+        Chg_eff: charging efficiency 
+        Disch_eff: discharging efficiency
+        Name: For printing information [TODO]
+
+"""
 class Battery:
     def __init__(self, Chg_eff, Disch_eff, Name="Battery" ):
         self.Chg_eff = Chg_eff
@@ -52,7 +64,8 @@ class Battery:
     
     # Given two daily demand levels and periods, calculate and return battery 
     # capacity needed to flatten load curve.
-    # Also calculates daily charge/discharge losses to store as attributes
+    # Also calculates daily charge/discharge losses and leveled power import 
+    # to store as attributes of the Battery.
     #   Ph: high demand power
     #   Pl: low demand power
     #   Th: daily peak duration [h]
@@ -65,6 +78,11 @@ class Battery:
         self.Chg_loss = Tl * (self.Pleveled - Pl) * (1 - self.Chg_eff)
         return self.C
     
+    # While operating to flatten load, the battery experiences losses.
+    # Calculate the cost of these losses, given the cost of electricity 
+    # used for charging. 
+    # Requires that load_level_cap(Ph, Pl, Th) has been executed on this Battery
+    # to compute losses
     def calc_leveling_loss_cost(self, Cl):
         self.Leveling_loss_cost = (self.Disch_loss+self.Chg_loss)*365*Cl
         return self.Leveling_loss_cost

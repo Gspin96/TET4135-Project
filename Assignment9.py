@@ -85,11 +85,20 @@ def problem4():
     print("\nTo ensure positive benefit compared to FeAl90 line, annual fixed cost fb must be less than: \n\tc90-ob =", 
           c90 - ob, 
           " NOK/y")
-    print("Max total fixed cost F0max: ", (c90 - ob)/ES.annuity_factor(0.085, 20), " NOK")
+    F0max = (c90 - ob)/ES.annuity_factor(disc_rate, 20)
+    print("Max total fixed cost F0max: ", F0max, " NOK")
     
     # the battery's lifetime is 15 y and the period of analysis is 20y
     # we need to reinvest after 15y, and the new battery will have salvage value 
     # at the end of analysis
+    Lbatt=15
+    Period=20
+    Fmax = (F0max / 
+                (1 + 
+                (1+disc_rate)**-Lbatt - 
+                (2*Lbatt-Period)*((1+disc_rate)**-Period)/Lbatt
+            ))
+    print("Max initial investment Fmax: ", Fmax, " NOK")
 
 problem1()
 problem2()
