@@ -6,7 +6,7 @@ Created on Wed Apr 20 15:54:30 2022
 """
 
 import math
-import classes.Objects as ES
+import classes.EnergySystems as ES
 
 P_lo = 1.25     #Off-peak demand [MW]
 P_hi_base = 3.5 #Peak demand before chargers [MW]
