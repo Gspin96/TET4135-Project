@@ -64,6 +64,42 @@ def problem2():
     print("\tf90: ", FeAl90.f, "NOK/y")
     print("\tc90: ", FeAl90.o + FeAl90.f, "NOK/y")
     
+def problem3():
+    print("\nProblem 3:")
+    Fkm75=750000
+    Fkm90=900000
+    slope=(Fkm90-Fkm75)/(90-60)
+    intercept=Fkm75-slope*60
+    print("Linearization of investment: \n\t Fkm(A)=",
+          slope, "* A +", intercept, " NOK/km")  
+    
+    # iterative method
+    # A = 60
+    # line=ES.Line(U,resistivity,Length,60)
+    # c_prev = 10e9
+    # while A <= 120:
+    #     Fkm = slope * A + intercept
+    #     line.set_section(A)
+    #     line.calc_fixed_annual(Fkm, disc_rate, 20)
+    #     line.calc_op_cost(P_lo, P_hi, Ch, Cl, Th)
+    #     c = line.o + line.f
+    #     if c < c_prev:
+    #         c_prev = c
+    #         A += 0.1
+    #     else:
+    #         break
+
+    # Analytical method
+    K = 365*resistivity*Length/U**2*(Ch*Th*P_hi**2+Cl*Tl*P_lo**2)
+    A = math.sqrt(K/ES.annuity_factor(disc_rate, 20)/Length/slope)
+    line = ES.Line(U,resistivity,Length,A)
+    Fkm = slope * A + intercept
+    c_opt = line.calc_fixed_annual(Fkm, disc_rate, 20) + line.calc_op_cost(P_lo, P_hi, Ch, Cl, Th)
+    
+    print("Optimal crossection, A: ", A, " mm2")
+    print("Total annual cost at optimal A, c: ", c_opt, "NOK/y")
+    
+
 def problem4():
     print("\nProblem 4:")
     batt = ES.Battery(0.96, 0.94)
@@ -102,4 +138,5 @@ def problem4():
 
 problem1()
 problem2()
+problem3()
 problem4()
