@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+classes/EnergySystems.py
+"""
 
 
 def annuity_factor(disc_rate, period): 

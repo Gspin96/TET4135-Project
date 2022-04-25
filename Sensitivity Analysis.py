@@ -50,7 +50,7 @@ def break_even(Lbatt, disc_rate, Chg_eff, Disc_eff, Ch, Cl):
                 (1+s)**-Lbatt - 
                 (2*Lbatt-Period)*((1+s)**-Period)/Lbatt
             ))
-    return Fmax/1e6
+    return Fmax/1e6 #result in MNOK
     
 def lifetime_sensitivity():
     #Calculate Fmax while varying lifetime from 10 to 20 years
@@ -59,8 +59,10 @@ def lifetime_sensitivity():
         Fmax[Lbatt] = break_even(Lbatt, 8.5, 0.96, 0.94, Ch, Cl)
     print("Fmax[Lbatt]: ", Fmax, " [MNOK]")
     
-    plt.plot(*zip(*sorted(Fmax.items())), "sr")
-    plt.plot(*zip(*sorted(Fmax.items())))
+    x, y = zip(*sorted(Fmax.items()))
+    
+    plt.plot(x, y, "sr")
+    plt.plot(x, y)
     plt.xticks(range(10,21))
     plt.grid()
     plt.xlabel('Battery lifetime [y]')
@@ -75,8 +77,10 @@ def discount_sensitivity():
         Fmax[disc_rate] = break_even(15, disc_rate, 0.96, 0.94, Ch, Cl)
     print("Fmax[Lbatt]: ", Fmax, " [MNOK]")
     
-    plt.plot(*zip(*sorted(Fmax.items())), "sr")
-    plt.plot(*zip(*sorted(Fmax.items())))
+    x, y = zip(*sorted(Fmax.items()))
+    
+    plt.plot(x, y, "sr")
+    plt.plot(x, y)
     plt.yticks(np.arange(-1,3,0.5))
     plt.grid()
     plt.xlabel('Discount rate [%]')
@@ -91,8 +95,10 @@ def efficiency_sensitivity():
         Fmax[eff] = break_even(15, 8.5, eff/100, eff/100, Ch, Cl)
     print("Fmax[Lbatt]: ", Fmax, " [MNOK]")
     
-    plt.plot(*zip(*sorted(Fmax.items())), "sr")
-    plt.plot(*zip(*sorted(Fmax.items())))
+    x, y = zip(*sorted(Fmax.items()))
+    
+    plt.plot(x, y, "sr")
+    plt.plot(x, y)
     plt.grid()
     plt.xlabel('Efficiency [%]')
     plt.ylabel('Break-even cost [MNOK]')
@@ -106,8 +112,10 @@ def peak_cost_sensitivity():
         Fmax[C_peak] = break_even(15, 8.5, 0.96, 0.94, C_peak, Cl)
     print("Fmax[Lbatt]: ", Fmax, " [MNOK]")
     
-    plt.plot(*zip(*sorted(Fmax.items())), "sr")
-    plt.plot(*zip(*sorted(Fmax.items())))
+    x, y = zip(*sorted(Fmax.items()))
+    
+    plt.plot(x, y, "sr")
+    plt.plot(x, y)
     plt.grid()
     plt.xlabel('Peak energy cost [NOK/MWh]')
     plt.ylabel('Break-even cost [MNOK]')

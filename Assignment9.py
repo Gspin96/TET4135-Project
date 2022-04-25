@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 20 15:54:30 2022
-
-@author: giova
+Assignment9.py
 """
 
 import math
@@ -68,12 +66,13 @@ def problem3():
     print("\nProblem 3:")
     Fkm75=750000
     Fkm90=900000
+    # Equation for two points using the slope-intercept method
     slope=(Fkm90-Fkm75)/(90-60)
     intercept=Fkm75-slope*60
     print("Linearization of investment: \n\t Fkm(A)=",
           slope, "* A +", intercept, " NOK/km")  
     
-    # iterative method
+    # Numerical method, increase section until cost stops decreasing
     # A = 60
     # line=ES.Line(U,resistivity,Length,60)
     # c_prev = 10e9
@@ -87,11 +86,19 @@ def problem3():
     #         c_prev = c
     #         A += 0.1
     #     else:
+    #         A -= 0.1
     #         break
+    # 
+    
 
-    # Analytical method
+    # Analytical method, searching the point where dc/dA=0 --> do/dA=-df/dA
+    # do/dA = KA^-2
+    # df/dA = annuity*Length*slope
+    # A = sqrt(K/(df/dA))
     K = 365*resistivity*Length/U**2*(Ch*Th*P_hi**2+Cl*Tl*P_lo**2)
-    A = math.sqrt(K/ES.annuity_factor(disc_rate, 20)/Length/slope)
+    print(K)
+    df = ES.annuity_factor(disc_rate, 20)*Length*slope
+    A = math.sqrt(K/df)
     line = ES.Line(U,resistivity,Length,A)
     Fkm = slope * A + intercept
     c_opt = line.calc_fixed_annual(Fkm, disc_rate, 20) + line.calc_op_cost(P_lo, P_hi, Ch, Cl, Th)
@@ -113,19 +120,21 @@ def problem4():
           + batt.calc_leveling_loss_cost(Cl))   #battery loss
     print("ob: ", ob, "NOK/y")
     
+    #Evaluate the 90mm2 line for comparison
     FeAl90 = ES.Line(U,resistivity,Length,90)
     c90 = (FeAl90.calc_fixed_annual(900000, disc_rate, 20) 
            + FeAl90.calc_op_cost(P_lo, P_hi, Ch, Cl, Th))
         
     print("c90: ", c90, "NOK/y")
-    print("\nTo ensure positive benefit compared to FeAl90 line, annual fixed cost fb must be less than: \n\tc90-ob =", 
+    print("\nTo ensure positive benefit compared to FeAl90 line,",
+          "annual fixed cost fb must be less than: \n\tc90-ob =", 
           c90 - ob, 
           " NOK/y")
     F0max = (c90 - ob)/ES.annuity_factor(disc_rate, 20)
     print("Max total fixed cost F0max: ", F0max, " NOK")
     
-    # the battery's lifetime is 15 y and the period of analysis is 20y
-    # we need to reinvest after 15y, and the new battery will have salvage value 
+    # The battery's lifetime is 15 y and the period of analysis is 20y
+    # We need to reinvest after 15y, and the new battery will have salvage value 
     # at the end of analysis
     Lbatt=15
     Period=20
