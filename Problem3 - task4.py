@@ -1,10 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul  5 09:47:04 2021
-
-@author: renateberge
-"""
+""" Problem3 - task4.py"""
 
 # Import of the pyomo module
 import pyomo.environ as pyo
@@ -24,10 +18,8 @@ Pmin = {'Coal': 0,   'Gas': 0 , 'Wind': 0 , 'Solar': 0}
 Pmax = {'Coal': 120, 'Gas': 30, 'Wind': 50 ,'Solar': 30 }   
 
 # Load [MW]
-P =[30,20,20,30,50,80,100,140,120,100,90,80,70,80,120,160,220,200,180,160,120,100,80,40]
-Pload={}
-for i in range(1,25):
-    Pload[i]=P[i-1]
+Pload =[30,20,20,30,50,80,100,140,120,100,90,80,70,80,120,160,220,200,180,160,
+        120,100,80,40]
 
 ## to make the implementation of the cost functions and emission functions a 
 ## bit easier, by removing the need to write out the complete functions for 
@@ -37,23 +29,13 @@ for i in range(1,25):
 a ={'Coal': 200, 'Gas': 500,'Wind': 800,'Solar': 1000 } 
 b ={'Coal': 65 , 'Gas': 120  ,'Wind': 40 ,'Solar': 35}
 
-# # Emission functions [kg/h]
-# cost_em1 ={'Gen1': 190,   'Gen2': 310   }
-# cost_em2 ={'Gen1': 3,     'Gen2': 3.5   }
-# cost_em3 ={'Gen1': 0.006, 'Gen2': 0.005 }
-
-
-# # Maximum emission [kg/h]
-# Emax = 5000
-
-
 ''' SETS '''
 
 # Set of generators
 model.generators = pyo.Set(initialize =['Coal','Gas','Wind','Solar']) 
 
 ''' Periods '''
-model.periods= pyo.Set(initialize=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24])
+model.periods= pyo.Set(initialize=range(0,24))
 ''' VARIABLES '''
 
 # Variables for power generation
@@ -86,7 +68,6 @@ def power_generation(model,i,j):
 model.power_generation = pyo.Constraint(model.generators,model.periods,
                                         rule = power_generation)
 
-
 # Constraint for power balance
 
 ## ensuring that the power generated is equal to the load demand
@@ -97,34 +78,23 @@ def power_balance(model,j):
 model.power_balance = pyo.Constraint(model.periods,rule = power_balance)
 
 
-# Constraint for emission 
-
-## ensuring that the total emissions do not exceed the emission limit
-
-# def emission(model):
-#     return  sum(cost_em1[i] + cost_em2[i]*model.generation[i] 
-#                 + cost_em3[i]*model.generation[i]**2 
-#                 for i in model.generators)  <= Emax
-# model.emission = pyo.Constraint( rule = emission)
-
-
 ''' SOLVER '''
 
-model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 opt = pyo.SolverFactory('gurobi')
-# setting higher solver precision prevents error when computing duals 
-# in some cases
-# opt.options['BarQCPConvTol'] = 1E-7 
 results = opt.solve(model,tee=True) 
 results.write(num=1)
-#model.display()
-#model.dual.display()
 
+# Prepare hourly generation values for plotting
+# We need to populate a 2-dimensional list
 G=[]
+# make a sublist for every generator
 for i,k in enumerate(model.generators):
     G.append([])
-    for j in range(1,25):
+    # for every hour append the hourly production value of the generator
+    for j in range(0,24):
         G[i].append(pyo.value(model.generation[model.generators.at(i+1),j]))
+
+# Plot the results nicely
 
 plt.stackplot(range(1,25), G, labels=model.generators)
 plt.legend(loc='upper left')
@@ -132,6 +102,9 @@ plt.margins(0,0.05)
 plt.xticks(range(1,24,2))
 plt.yticks(range(0,240, 20))
 plt.grid()
-plt.savefig('plots/P3T1Plot.png', dpi=150)
+plt.xlabel('Hour')
+plt.ylabel('Power [MW]')
+plt.title('Production profile')
+plt.savefig('plots/P3T4-PowerPlot.png', dpi=150)
 
 

@@ -1,10 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul  5 09:47:04 2021
-
-@author: renateberge
-"""
+""" Problem3 - task2.py """
 
 # Import of the pyomo module
 import pyomo.environ as pyo
@@ -24,10 +18,8 @@ Pmin = {'Coal': 0,   'Gas': 0 , 'Wind': 0 , 'Solar': 0}
 Pmax = {'Coal': 120, 'Gas': 30, 'Wind': 50 ,'Solar': 30 }   
 
 # Load [MW]
-P =[30,20,20,30,50,80,100,140,120,100,90,80,70,80,120,160,220,200,180,160,120,100,80,40]
-Pload={}
-for i in range(1,25):
-    Pload[i]=P[i-1]
+Pload =[30,20,20,30,50,80,100,140,120,100,90,80,70,80,120,160,220,200,180,160,
+        120,100,80,40]
 
 ## to make the implementation of the cost functions and emission functions a 
 ## bit easier, by removing the need to write out the complete functions for 
@@ -39,7 +31,6 @@ b ={'Coal': 60 , 'Gas': 100  ,'Wind': 120 ,'Solar': 150}
 #b Part B
 #b ={'Coal': 65 , 'Gas': 120  ,'Wind': 40 ,'Solar': 35}
 
-'Task 2'
 #Emision CO2
 e_co2 = {'Coal': 1.5, 'Gas': 0.2,'Wind': 0,'Solar': 0 } 
 
@@ -51,8 +42,10 @@ cost_e_co2 = 60
 # Set of generators
 model.generators = pyo.Set(initialize =['Coal','Gas','Wind','Solar']) 
 
-''' Periods '''
-model.periods= pyo.Set(initialize=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24])
+# Set of periods
+model.periods= pyo.Set(initialize=range(0,24))
+
+
 ''' VARIABLES '''
 
 # Variables for power generation
@@ -62,9 +55,11 @@ model.generation = pyo.Var(model.generators, model.periods)
 
 ## the objctive function is the sum of the cost function for both generators
 ## the cost functions are dependent on the variables for power generation
+## as well as emission and emission tax
   
 def objective_function(model):
-    return sum(a[i] + b[i]*model.generation[i,j] + e_co2[i]*cost_e_co2*model.generation[i,j]
+    return sum(a[i] + b[i]*model.generation[i,j] 
+               + e_co2[i]*cost_e_co2*model.generation[i,j]
                for i in model.generators 
                for j in model.periods) 
 model.obj= pyo.Objective(rule=objective_function, sense=pyo.minimize)
@@ -94,36 +89,23 @@ def power_balance(model,j):
 model.power_balance = pyo.Constraint(model.periods,rule = power_balance)
 
 
-# Constraint for emission 
-
-## ensuring that the total emissions do not exceed the emission limit
-
-# def emission(model):
-#     return  sum(cost_em1[i] + cost_em2[i]*model.generation[i] 
-#                 + cost_em3[i]*model.generation[i]**2 
-#                 for i in model.generators)  <= Emax
-# model.emission = pyo.Constraint( rule = emission)
-
-
 ''' SOLVER '''
 
-model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 opt = pyo.SolverFactory('gurobi')
-# setting higher solver precision prevents error when computing duals 
-# in some cases
-# opt.options['BarQCPConvTol'] = 1E-7 
 results = opt.solve(model,tee=True) 
 results.write(num=1)
-#model.display()
-#model.dual.display()
 
-
-#To make plot
+# Prepare hourly generation values for plotting
+# We need to populate a 2-dimensional list
 G=[]
+# make a sublist for every generator
 for i,k in enumerate(model.generators):
     G.append([])
-    for j in range(1,25):
+    # for every hour append the hourly production value of the generator
+    for j in range(0,24):
         G[i].append(pyo.value(model.generation[model.generators.at(i+1),j]))
+
+# Plot the generation nicely
 plt.figure(0)
 plt.stackplot(range(1,25), G, labels=model.generators)
 plt.legend(loc='upper left')
@@ -132,13 +114,17 @@ plt.xticks(range(1,24,2))
 plt.yticks(range(0,240, 20))
 plt.grid()
 plt.xlabel('Hour')
-plt.ylabel('Cost [NOK]')
+plt.ylabel('Power [MW]')
 plt.title('Production profile')
 plt.savefig('plots/P3T2-PowerPlot.png', dpi=150)
 
-#Plot emissions
+print("Minimum daily cost:", pyo.value(model.obj), "EUR")
+
+# Prepare hourly CO2 emission for plotting
+# We need to populate a list with the value for each our
 CO2 = []
-for j in range(1,25):
+for j in range(0,24):
+    #sum emission of all generators in the hour j
     CO2.append(sum(e_co2[i]*pyo.value(model.generation[i,j]) for i in model.generators))
 
 plt.figure(1)
@@ -147,6 +133,10 @@ plt.margins(0,0.05)
 plt.xticks(range(1,24,2))
 plt.yticks(range(0,200, 20))
 plt.grid()
+plt.xlabel('Hour')
+plt.ylabel('CO2 [tons]')
+plt.title('CO2 Emissions')
+plt.savefig('plots/P3T2-Emissions.png', dpi=150)
 
 print("Total emission:", sum(CO2), "tons")
 

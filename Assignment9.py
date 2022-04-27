@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Assignment9.py
-"""
+""" Assignment9.py """
 
 import math
 import classes.EnergySystems as ES
