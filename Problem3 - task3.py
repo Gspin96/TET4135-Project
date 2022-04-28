@@ -28,8 +28,6 @@ Pload =[30,20,20,30,50,80,100,140,120,100,90,80,70,80,120,160,220,200,180,160,
 # Cost functions [NOK/MWh]
 a ={'Coal': 200, 'Gas': 500,'Wind': 800,'Solar': 1000 } 
 b ={'Coal': 60 , 'Gas': 100  ,'Wind': 120 ,'Solar': 150}
-#b Part B
-#b ={'Coal': 65 , 'Gas': 120  ,'Wind': 40 ,'Solar': 35}
 
 'Task 2'
 #Emision CO2
@@ -112,8 +110,6 @@ opt = pyo.SolverFactory('gurobi')
 results = opt.solve(model,tee=True) 
 results.write(num=1)
 
-print("Minimum daily cost:", pyo.value(model.obj), "EUR")
-
 # Prepare hourly generation values for plotting
 # We need to populate a 2-dimensional list
 G=[]
@@ -136,6 +132,12 @@ plt.xlabel('Hour')
 plt.ylabel('Power [MW]')
 plt.title('Production profile')
 plt.savefig('plots/P3T3-PowerPlot.png', dpi=150)
+
+#Also print the total generation of each plant
+for i,k in enumerate(model.generators):
+    print("Daily production from", k, sum(G[i]), "MWh")
+# And total cost    
+print("Minimum daily cost:", pyo.value(model.obj), "EUR")
 
 # Prepare hourly CO2 emission for plotting
 # We need to populate a list with the value for each our
@@ -175,5 +177,3 @@ plt.title('NOx Emissions')
 plt.savefig('plots/P3T3-NOx.png', dpi=150)
 
 print("Total NOx emission:", sum(nox), "tons")
-
-

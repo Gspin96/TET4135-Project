@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 24 12:45:31 2022
-
-@author: giova
-"""
+""" Sensitivity Analysis.py """
 import numpy as np
 import matplotlib.pyplot as plt
 import classes.EnergySystems as ES

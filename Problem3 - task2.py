@@ -118,6 +118,10 @@ plt.ylabel('Power [MW]')
 plt.title('Production profile')
 plt.savefig('plots/P3T2-PowerPlot.png', dpi=150)
 
+#Also print the total generation of each plant
+for i,k in enumerate(model.generators):
+    print("Daily production from", k, sum(G[i]), "MWh")
+# And total cost    
 print("Minimum daily cost:", pyo.value(model.obj), "EUR")
 
 # Prepare hourly CO2 emission for plotting
@@ -139,5 +143,3 @@ plt.title('CO2 Emissions')
 plt.savefig('plots/P3T2-Emissions.png', dpi=150)
 
 print("Total emission:", sum(CO2), "tons")
-
-

@@ -107,4 +107,10 @@ plt.ylabel('Power [MW]')
 plt.title('Production profile')
 plt.savefig('plots/P3T4-PowerPlot.png', dpi=150)
 
+#Also print the total generation of each plant
+for i,k in enumerate(model.generators):
+    print("Daily production from", k, sum(G[i]), "MWh")
+# And total cost    
+print("Minimum daily cost:", pyo.value(model.obj), "EUR")
+
 
